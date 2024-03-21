@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+from scipy.stats import norm
 import logging
 
 # Utilitary functions to process a generic options pandas DataFrame
@@ -16,7 +17,7 @@ def get_common_strikes(df: pd.DataFrame) -> set:
     return common_strikes
     
 
-def clean_df(df: pd.DataFrame, min_oi: int=3000) -> pd.DataFrame:
+def clean_df(df: pd.DataFrame, min_oi: int=1000, target_expis: list[float]=None) -> pd.DataFrame:
     """
     From an options dataframe, returns a simpler dataframe with the most liquid expirations,
     only rows for which we have data at the same strikes for all maturities.
@@ -25,7 +26,8 @@ def clean_df(df: pd.DataFrame, min_oi: int=3000) -> pd.DataFrame:
     df["mid"] = (df["bid_1545"] + df["ask_1545"]) / 2
     df = df.query("option_type=='C'") # Keep calls only
 
-    target_expis = sorted(df["maturity"].value_counts().iloc[:NB_MARGINALS].index.tolist())
+    if target_expis is None:
+        target_expis = sorted(df["maturity"].value_counts().iloc[:NB_MARGINALS].index.tolist())
     tolerance = 0.01
     df = df[np.any([np.isclose(df['maturity'], target, atol=tolerance) for target in target_expis], axis=0)]
 
@@ -34,6 +36,7 @@ def clean_df(df: pd.DataFrame, min_oi: int=3000) -> pd.DataFrame:
 
     return df[["strike", "implied_volatility_1545", "mid", "maturity", "expiration"]]
 
+# TODO: correct things here that are a bit messy in the first two terms.
 def smile_to_density(strikes: np.ndarray | list[float], prices: np.ndarray | list[float]):
     """
     Breeden-Litzenberger formula: we derive (through finite differences) the options prices
@@ -42,5 +45,17 @@ def smile_to_density(strikes: np.ndarray | list[float], prices: np.ndarray | lis
     We compute $\frac{[C(x+h) - C(x)] - [C(x) - C(x-h)]}{h**2}.$
     """
     first_order = np.divide(np.diff(prices, prepend=0), np.diff(strikes, prepend=strikes[0]))
-    second_order = np.divide(np.diff(first_order, prepend=0), np.diff(strikes, prepend=strikes[0]))
+    second_order = np.divide(np.diff(first_order, prepend=0), np.diff(strikes, prepend=strikes[-1]))
     return second_order
+
+
+def black_scholes_call_price(S, K, T, r, sigma):
+    """
+    Calculate the Black-Scholes call option price given the implied volatility.
+    """
+    d1 = (np.log(S / K) + (r + 0.5 * sigma ** 2) * T) / (sigma * np.sqrt(T))
+    d2 = d1 - sigma * np.sqrt(T)
+    call_price = S * norm.cdf(d1) - K * np.exp(-r * T) * norm.cdf(d2)
+    return call_price
+
+# TODO: add a way to check for the convex ordering of a set of measures
