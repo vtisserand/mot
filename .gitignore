@@ -1,6 +1,8 @@
 # Others
 *.DS_Store
 data/
+tps/
+nbs/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
