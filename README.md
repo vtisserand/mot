@@ -17,11 +17,18 @@ $$\sup_{\mathbb{Q} \in \mathcal{M}(\mathbb{P}^1, \mathbb{P}^2)} \mathbb{E}^{\mat
 
 ## Numerical implementation
 
-We derive the market measures $\mathbb{P}^1$ and $\mathbb{P}^2$ by interpolating SPX option prices (with SVI) and deriving them twice with respect to the strikes.
+We derive the market measures $\mathbb{P}^1$ and $\mathbb{P}^2$ by interpolating SPX option prices (with SVI) and deriving them twice with respect to the strikes. The cdf of these densities lie in the data folder.
 
 ![Interpolated smiles and market densities](report/img/illustr.png)
 
 Them we decide to train a neural network to solve the optimization problem: solving for $u = \mathcal{L}(\textbf{W}, \textbf{b})$, where $\textbf{W}, \textbf{b}$ are learnable parameters of a neural network.
+
+In order to run the network, simply run
+```
+python3 src/mot.py
+```
+
+There are no arguments parser but feel free to tweak the parameters in the config file.
 
 
 
