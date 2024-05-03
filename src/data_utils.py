@@ -24,17 +24,18 @@ def clean_df(df: pd.DataFrame, min_oi: int=1000, target_expis: list[float]=None)
     """
     df = df.query("open_interest > @min_oi")
     df["mid"] = (df["bid_1545"] + df["ask_1545"]) / 2
-    df = df.query("option_type=='C'") # Keep calls only
+    # df = df.query("option_type=='C'") # Keep calls only
 
     if target_expis is None:
         target_expis = sorted(df["maturity"].value_counts().iloc[:NB_MARGINALS].index.tolist())
     tolerance = 0.01
     df = df[np.any([np.isclose(df['maturity'], target, atol=tolerance) for target in target_expis], axis=0)]
 
-    common_strikes = get_common_strikes(df)
-    df = df[df["strike"].isin(common_strikes)]
+    # The below is not actually needed.
+    # common_strikes = get_common_strikes(df)
+    # df = df[df["strike"].isin(common_strikes)]
 
-    return df[["strike", "implied_volatility_1545", "mid", "maturity", "expiration"]]
+    return df[["strike", "implied_volatility_1545", "mid", "maturity", "expiration", "option_type"]]
 
 # TODO: correct things here that are a bit messy in the first two terms.
 def smile_to_density(strikes: np.ndarray | list[float], prices: np.ndarray | list[float]):

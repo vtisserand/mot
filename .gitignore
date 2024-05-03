@@ -1,6 +1,6 @@
 # Others
 *.DS_Store
-data/
+data/spx_options.parquet
 tps/
 nbs/
 

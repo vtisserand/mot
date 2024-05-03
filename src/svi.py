@@ -27,7 +27,8 @@ class SVICalibrator:
             return np.sum((implied_variances - self.compute_svi_variance(params, log_moneyness))**2)
 
         initial_guess = [0.1, 0.1, 0.1, 0.1, 0.1]  # Initial guess for the parameters
-        log_moneyness = np.log(self.strikes / self.forward)
+        moneyness = (self.strikes / self.forward).astype(float)
+        log_moneyness = np.log(moneyness)
 
         result = minimize(objective_function, initial_guess, args=(log_moneyness, self.ivs))
 
