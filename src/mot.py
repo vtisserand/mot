@@ -84,7 +84,7 @@ if __name__ == "__main__":
         updates, opt_state = tx.update(grads, opt_state)
         params = optax.apply_updates(params, updates)
 
-        if epoch % 50 == 0 or epoch < 5 and epoch > 0:
+        if epoch % 100 == 0 or epoch < 5 and epoch > 0:
             print(f"Iteration: {epoch}, Avg. Loss: {loss_val}")
 
 
